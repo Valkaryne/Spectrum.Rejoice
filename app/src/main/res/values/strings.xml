@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Spectrum.Rejoice</string>
+
+    <string name="network_connection_error_title">Network error</string>
+    <string name="network_connection_error_cancel">Cancel</string>
+    <string name="network_connection_error_action">Try again</string>
 </resources>
