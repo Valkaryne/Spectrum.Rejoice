@@ -15,7 +15,7 @@ class GetGamesUseCase(private val igdbRepository: IGDBRepository) {
 
             if (resultType == ResultType.SUCCESS) {
                 gamesDomainModel.data?.let {
-                    val sortedGames = getSortedByRatingAscendingGames(it)
+                    val sortedGames = getSortedByRatingDescendingGames(it)
 
                     games = Result.success(sortedGames)
                 }
@@ -27,7 +27,7 @@ class GetGamesUseCase(private val igdbRepository: IGDBRepository) {
         return games
     }
 
-    private fun getSortedByRatingAscendingGames(gamesDomainModel: List<GameDomainModel>): List<GameDomainModel> {
-        return gamesDomainModel.sortedBy { it.rating }
+    private fun getSortedByRatingDescendingGames(gamesDomainModel: List<GameDomainModel>): List<GameDomainModel> {
+        return gamesDomainModel.sortedByDescending { it.rating }
     }
 }

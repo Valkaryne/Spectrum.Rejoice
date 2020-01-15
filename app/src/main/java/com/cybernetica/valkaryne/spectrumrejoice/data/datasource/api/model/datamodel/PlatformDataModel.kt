@@ -2,6 +2,5 @@ package com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.model.data
 
 data class PlatformDataModel(
     val id: Int,
-    val abbreviation: String,
-    val platformLogo: ImageSourceDataModel
+    val abbreviation: String
 )

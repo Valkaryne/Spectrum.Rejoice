@@ -15,7 +15,7 @@ class IGDBDataSource(private val igdbService: IGDBService) {
             val games = igdbService.getAllGames(USER_KEY, body)
             Result.success(games?.map { ResponseToDataModelMapper.map(it) })
         } catch (ex: Exception) {
-            Result.error()
+            Result.error(ex)
         }
     }
 
@@ -26,16 +26,17 @@ class IGDBDataSource(private val igdbService: IGDBService) {
 
     companion object {
         const val MAX_ITEMS_PER_PAGE: Int = 50
-        private const val USER_KEY = ""
+        private const val USER_KEY = "5b054f2a99970e757793aef72ec608c5"
         private const val QUERY =
             """fields name,
                     cover.image_id, 
-                    genres.name, 
+                    genres.name,
+                    platforms.abbreviation, 
                     rating, 
                     involved_companies.company.logo.image_id, involved_companies.company.name, 
                         involved_companies.developer, involved_companies.publisher, 
-                    release_dates.human, release_dates.platform.abbreviation, 
-                        release_dates.platform.platform_logo.image_id, release_dates.region, 
+                    release_dates.y, release_dates.human, release_dates.platform.abbreviation, 
+                        release_dates.region, 
                     summary, 
                     screenshots.image_id;
                 limit $MAX_ITEMS_PER_PAGE;

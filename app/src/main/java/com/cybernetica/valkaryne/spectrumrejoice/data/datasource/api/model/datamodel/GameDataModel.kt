@@ -6,6 +6,7 @@ data class GameDataModel(
     val cover: ImageSourceDataModel,
     val genres: List<GenreDataModel>,
     val involvedCompanies: List<InvolvedCompanyDataModel>,
+    val platforms: List<PlatformDataModel>,
     val rating: Double,
     val releaseDates: List<ReleaseDateDataModel>,
     val screenshots: List<ImageSourceDataModel>,

@@ -6,6 +6,7 @@ data class GameDomainModel(
     val coverId: String,
     val genres: List<String>,
     val involvedCompanies: List<InvolvedCompanyDomainModel>,
+    val platforms: List<PlatformDomainModel>,
     val rating: Double,
     val releaseDates: List<ReleaseDateDomainModel>,
     val screenshotIds: List<String>,

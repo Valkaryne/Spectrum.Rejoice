@@ -2,9 +2,9 @@ package com.cybernetica.valkaryne.spectrumrejoice.home.igdb.domain.model
 
 data class ReleaseDateDomainModel(
     val id: Int,
+    val year: String,
     val date: String,
     val platformName: String,
-    val platformLogoId: String,
     val region: Int
 ) {
     fun getRegion(): Region {

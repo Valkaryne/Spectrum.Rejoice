@@ -8,6 +8,7 @@ data class GameResponse(
     @SerializedName("cover") val cover: ImageSourceResponse? = null,
     @SerializedName("genres") val genres: List<GenreResponse>? = null,
     @SerializedName("involved_companies") val involvedCompanies: List<InvolvedCompanyResponse>? = null,
+    @SerializedName("platforms") val platforms: List<PlatformResponse>? = null,
     @SerializedName("rating") val rating: Double? = null,
     @SerializedName("release_dates") val releaseDates: List<ReleaseDateResponse>? = null,
     @SerializedName("screenshots") val screenshots: List<ImageSourceResponse>? = null,

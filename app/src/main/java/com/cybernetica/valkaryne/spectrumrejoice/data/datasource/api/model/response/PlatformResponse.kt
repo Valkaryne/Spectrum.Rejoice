@@ -4,6 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 data class PlatformResponse(
     @SerializedName("id") val id: Int? = null,
-    @SerializedName("abbreviation") val abbreviation: String? = null,
-    @SerializedName("platform_logo") val platformLogo: ImageSourceResponse? = null
+    @SerializedName("abbreviation") val abbreviation: String? = null
 )

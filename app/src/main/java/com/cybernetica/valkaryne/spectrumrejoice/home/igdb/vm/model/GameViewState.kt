@@ -5,6 +5,7 @@ data class GameViewState(
     val name: String,
     val coverUrl: String,
     val genres: List<String>,
+    val platforms: List<PlatformViewState>,
     val developers: List<CompanyViewState>,
     val publishers: List<CompanyViewState>,
     val rating: String,

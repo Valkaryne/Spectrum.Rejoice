@@ -14,6 +14,7 @@ object ResponseToDataModelMapper : BaseMapper<GameResponse, GameDataModel> {
             cover = mapImageSource(type.cover),
             genres = type.genres?.map { mapGenre(it) } ?: listOf(),
             involvedCompanies = mapInvolvedCompanies(type.involvedCompanies),
+            platforms = mapPlatforms(type.platforms),
             rating = type.rating ?: 0.0,
             releaseDates = mapReleaseDates(type.releaseDates),
             screenshots = type.screenshots?.map { mapImageSource(it) } ?: listOf(),
@@ -50,15 +51,24 @@ object ResponseToDataModelMapper : BaseMapper<GameResponse, GameDataModel> {
         } ?: listOf()
     }
 
+    private fun mapPlatforms(response: List<PlatformResponse>?): List<PlatformDataModel> {
+        return response?.map {
+            PlatformDataModel(
+                id = it.id ?: -1,
+                abbreviation = it.abbreviation ?: ""
+            )
+        } ?: listOf()
+    }
+
     private fun mapReleaseDates(response: List<ReleaseDateResponse>?): List<ReleaseDateDataModel> {
         return response?.map {
             ReleaseDateDataModel(
                 id = it.id ?: -1,
+                y = it.y ?: -1,
                 human = it.human ?: "",
                 platform = PlatformDataModel(
                     id = it.platform?.id ?: -1,
-                    abbreviation = it.platform?.abbreviation ?: "",
-                    platformLogo = mapImageSource(it.platform?.platformLogo)
+                    abbreviation = it.platform?.abbreviation ?: ""
                 ),
                 region = it.region ?: -1
             )
