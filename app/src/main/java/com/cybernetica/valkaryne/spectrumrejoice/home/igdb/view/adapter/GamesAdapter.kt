@@ -1,34 +1,70 @@
 package com.cybernetica.valkaryne.spectrumrejoice.home.igdb.view.adapter
 
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cybernetica.valkaryne.spectrumrejoice.R
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewState
+import com.cybernetica.valkaryne.spectrumrejoice.core.status.QueryStatus
+import com.cybernetica.valkaryne.spectrumrejoice.core.status.StatusType
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewStateModel
 import com.cybernetica.valkaryne.spectrumrejoice.ui.extensions.inflate
 
-class GamesAdapter : RecyclerView.Adapter<ViewHolder>() {
+class GamesAdapter(private val callback: OnClickListener) :
+    PagedListAdapter<GameViewStateModel, RecyclerView.ViewHolder>(GamesDiffCallback()) {
 
-    private var games: List<GameViewState> = listOf()
+    interface OnClickListener {
+        fun onClickRetry()
+        fun onListUpdated(size: Int, queryStatus: QueryStatus?)
+    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
-        ViewHolder(parent.inflate(R.layout.item_list_game))
+    private var queryStatus: QueryStatus? = null
 
-    override fun getItemCount(): Int = games?.size ?: 0
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            R.layout.item_list_game -> GameViewHolder(parent.inflate(R.layout.item_list_game))
+            R.layout.item_query_status -> QueryStatusViewHolder(parent.inflate(R.layout.item_query_status))
+            else -> throw IllegalStateException("Unknown view type $viewType")
+        }
+    }
 
-    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        games.let {
-            viewHolder.apply {
-                populateViews(it[position])
+    override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
+        when (getItemViewType(position)) {
+            R.layout.item_list_game -> (viewHolder as GameViewHolder).populateViews(getItem(position))
+            R.layout.item_query_status -> (viewHolder as QueryStatusViewHolder).bindTo(
+                queryStatus,
+                callback
+            )
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (hasExtraRow() && position == itemCount - 1) {
+            R.layout.item_query_status
+        } else {
+            R.layout.item_list_game
+        }
+    }
+
+    override fun getItemCount(): Int {
+        this.callback.onListUpdated(super.getItemCount(), this.queryStatus)
+        return super.getItemCount()
+    }
+
+    fun updateQueryStatus(newQueryStatus: QueryStatus?) {
+        val previousStatus = this.queryStatus
+        val hadExtraRow = hasExtraRow()
+        this.queryStatus = newQueryStatus
+        val hasExtraRow = hasExtraRow()
+        if (hadExtraRow != hasExtraRow) {
+            if (hadExtraRow) {
+                notifyItemRemoved(super.getItemCount())
+            } else {
+                notifyItemInserted(super.getItemCount())
             }
+        } else if (hasExtraRow && previousStatus != newQueryStatus) {
+            notifyItemChanged(itemCount - 1)
         }
     }
 
-    fun updateListData(updatedList: List<GameViewState>) {
-        games.let {
-            val result = DiffUtil.calculateDiff(GamesDiffCallback(it, updatedList))
-            this.games = updatedList.toMutableList()
-            result.dispatchUpdatesTo(this)
-        }
-    }
+    private fun hasExtraRow() = queryStatus != null && queryStatus?.statusType != StatusType.SUCCESS
 }

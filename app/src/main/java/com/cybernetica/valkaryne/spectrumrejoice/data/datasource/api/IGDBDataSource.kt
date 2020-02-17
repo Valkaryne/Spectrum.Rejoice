@@ -1,47 +1,71 @@
 package com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api
 
-import com.cybernetica.valkaryne.spectrumrejoice.core.datatype.Result
-import com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.mapper.ResponseToDataModelMapper
-import com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.model.datamodel.GameDataModel
-import com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.retrofit.IGDBService
-import okhttp3.MediaType
-import okhttp3.RequestBody
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.PageKeyedDataSource
+import com.cybernetica.valkaryne.spectrumrejoice.core.status.QueryStatus
+import com.cybernetica.valkaryne.spectrumrejoice.data.repository.mapper.DataModelToDomainModelMapper
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.domain.IGDBRepository
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.domain.model.GameDomainModel
+import kotlinx.coroutines.*
 
-class IGDBDataSource(private val igdbService: IGDBService) {
+class IGDBDataSource(private val repository: IGDBRepository, private val scope: CoroutineScope) :
+    PageKeyedDataSource<Int, GameDomainModel>() {
 
-    suspend fun getAllGames(page: Int): Result<List<GameDataModel>> {
-        val body = createRequestBody(page)
-        return try {
-            val games = igdbService.getAllGames(USER_KEY, body)
-            Result.success(games?.map { ResponseToDataModelMapper.map(it) })
-        } catch (ex: Exception) {
-            Result.error(ex)
+    private var supervisorJob = SupervisorJob()
+    private var retryQuery: (() -> Any)? = null
+
+    private val queryStatusLiveData = MutableLiveData<QueryStatus>()
+    val queryStatus: LiveData<QueryStatus>
+        get() = queryStatusLiveData
+
+    override fun loadInitial(
+        params: LoadInitialParams<Int>,
+        callback: LoadInitialCallback<Int, GameDomainModel>
+    ) {
+        retryQuery = { loadInitial(params, callback) }
+        executeQuery(1, params.requestedLoadSize) {
+            callback.onResult(it, null, 2)
         }
     }
 
-    private fun createRequestBody(page: Int): RequestBody {
-        val offset = (page - 1) * MAX_ITEMS_PER_PAGE
-        return RequestBody.create(MediaType.parse("text/plain"), String.format(QUERY, offset))
+    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, GameDomainModel>) {
+        val page = params.key
+        retryQuery = { loadAfter(params, callback) }
+        executeQuery(page, params.requestedLoadSize) {
+            callback.onResult(it, page + 1)
+        }
     }
 
-    companion object {
-        const val MAX_ITEMS_PER_PAGE: Int = 50
-        private const val USER_KEY = "5b054f2a99970e757793aef72ec608c5"
-        private const val QUERY =
-            """fields name,
-                    cover.image_id, 
-                    genres.name,
-                    platforms.abbreviation, 
-                    rating, 
-                    involved_companies.company.logo.image_id, involved_companies.company.name, 
-                        involved_companies.developer, involved_companies.publisher, 
-                    release_dates.y, release_dates.human, release_dates.platform.abbreviation, 
-                        release_dates.region, 
-                    summary, 
-                    screenshots.image_id;
-                limit $MAX_ITEMS_PER_PAGE;
-                offset %2d;
-                where rating_count > 0;
-                sort rating_count desc;"""
+    override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, GameDomainModel>) {}
+
+    override fun invalidate() {
+        super.invalidate()
+        supervisorJob.cancelChildren()
+    }
+
+    fun refresh() =
+        this.invalidate()
+
+    fun retryFailedQuery() {
+        val prevQuery = retryQuery
+        retryQuery = null
+        prevQuery?.invoke()
+    }
+
+    private fun executeQuery(page: Int, perPage: Int, callback: (List<GameDomainModel>) -> Unit) {
+        queryStatusLiveData.postValue(QueryStatus.loading())
+        scope.launch(getJobErrorHandler() + supervisorJob) {
+            val games = repository.getAllGames(page, perPage)
+            retryQuery = null
+            queryStatusLiveData.postValue(QueryStatus.success())
+            callback(games.map { DataModelToDomainModelMapper.map(it) })
+        }
+    }
+
+    private fun getJobErrorHandler() = CoroutineExceptionHandler { _, throwable ->
+        Log.e("SuperCat", "${IGDBDataSource::class.java.simpleName}::An error happened: $throwable")
+        queryStatusLiveData.postValue(QueryStatus.error(throwable))
     }
 }

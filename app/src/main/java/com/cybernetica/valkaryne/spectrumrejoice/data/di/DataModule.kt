@@ -1,11 +1,6 @@
 package com.cybernetica.valkaryne.spectrumrejoice.data.di
 
-import com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.IGDBDataSource
 import com.cybernetica.valkaryne.spectrumrejoice.data.datasource.api.retrofit.IGDBService
-import com.cybernetica.valkaryne.spectrumrejoice.data.repository.IGDBRepositoryImpl
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.domain.IGDBRepository
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -25,10 +20,6 @@ private fun provideRetrofitInstance(): Retrofit = Retrofit.Builder()
 
 val gamesApiModule = module {
     factory { provideIGDBService(retrofit = get()) }
-    factory { IGDBDataSource(igdbService = get()) }
-    single {
-        IGDBRepositoryImpl(igdbDataSource = get()) as IGDBRepository
-    }
 }
 
 private fun provideIGDBService(retrofit: Retrofit): IGDBService =

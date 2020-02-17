@@ -1,84 +1,115 @@
 package com.cybernetica.valkaryne.spectrumrejoice.home.igdb.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.cybernetica.valkaryne.spectrumrejoice.R
+import com.cybernetica.valkaryne.spectrumrejoice.core.status.QueryStatus
+import com.cybernetica.valkaryne.spectrumrejoice.core.status.StatusType
 import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.view.adapter.GamesAdapter
 import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.IGDBViewModel
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewState
-import kotlinx.android.synthetic.main.activity_main.*
-import org.koin.android.ext.android.inject
+import com.cybernetica.valkaryne.spectrumrejoice.ui.extensions.setVisibility
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlinx.android.synthetic.main.activity_main.activity_main_empty_data as emptyData
+import kotlinx.android.synthetic.main.activity_main.activity_main_recycler as recyclerView
+import kotlinx.android.synthetic.main.activity_main.activity_main_spinner as spinner
+import kotlinx.android.synthetic.main.activity_main.activity_main_swipe_refresh as swipeRefresh
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: IGDBViewModel by viewModel()
-    private val gamesAdapter: GamesAdapter by inject()
-    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: GamesAdapter
+
+    private var apiErrorCount: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        bindViews()
-        observeLiveData()
+        configureRecyclerView()
+        configureObservables()
+        configureSwipeToRefresh()
     }
 
-    private fun bindViews() {
-        recyclerView = findViewById(R.id.recycler_view_games)
-    }
-
-    private fun observeLiveData() {
-        viewModel.gamesLiveData.observe(this, Observer(this::onGamesReceived))
-        viewModel.isErrorLiveData.observe(this, Observer { onErrorReceived() })
-        viewModel.areEmptyGamesLiveData.observe(this, Observer { onEmptyGamesReceived() })
-        viewModel.isLoadingLiveData.observe(this, Observer(this::onLoadingStateReceived))
-    }
-
-    private fun onGamesReceived(games: List<GameViewState>) {
-        populateRecyclerView(games)
-        animateRecyclerView()
-    }
-
-    private fun populateRecyclerView(gamesViewState: List<GameViewState>) {
-        recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = gamesAdapter.apply { updateListData(gamesViewState) }
-            setHasFixedSize(true)
-        }
-    }
-
-    private fun animateRecyclerView() {
+    private fun configureRecyclerView() {
+        adapter = GamesAdapter(GameItemCallback())
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.layoutAnimation =
             AnimationUtils.loadLayoutAnimation(this, R.anim.layout_animation_fall_down)
     }
 
+    private fun configureObservables() {
+        viewModel.queryStatus.observe(this, Observer {
+            adapter.updateQueryStatus(it)
+            if (it.statusType == StatusType.LOADING) {
+                onLoadingStateReceived()
+            }
+        })
+        viewModel.games.observe(this, Observer { adapter.submitList(it) })
+    }
+
+    private fun configureSwipeToRefresh() {
+        swipeRefresh.setOnRefreshListener { viewModel.refreshDataList() }
+    }
+
+    private fun onSuccessStateReceived() {
+        swipeRefresh.isRefreshing = false
+        swipeRefresh.isEnabled = true
+    }
+
+    private fun onEmptyGamesReceived() {
+        emptyData.setVisibility(true)
+    }
+
+    private fun onLoadingStateReceived() {
+        spinner.setVisibility(true)
+        swipeRefresh.isRefreshing = true
+        swipeRefresh.isEnabled = false
+    }
+
     private fun onErrorReceived() {
+        apiErrorCount++
+        if (apiErrorCount > 1) return
+
+        swipeRefresh.isRefreshing = false
+        swipeRefresh.isEnabled = false
         AlertDialog.Builder(this)
             .setTitle(R.string.network_connection_error_title)
             .setCancelable(false)
             .setNegativeButton(R.string.network_connection_error_cancel) { _, _ -> finish() }
-            .setPositiveButton(R.string.network_connection_error_action) { _, _ -> viewModel.handleGamesLoad() }
+            .setPositiveButton(R.string.network_connection_error_action) { _, _ ->
+                run {
+                    viewModel.refreshFailedRequest()
+                    apiErrorCount = 0
+                }
+            }
             .show()
     }
 
-    private fun onEmptyGamesReceived() {
-        // do smth
-    }
+    inner class GameItemCallback : GamesAdapter.OnClickListener {
+        override fun onClickRetry() {
+            viewModel.refreshFailedRequest()
+        }
 
-    private fun onLoadingStateReceived(isLoading: Boolean) {
-        showSpinner(isLoading)
-    }
-
-    private fun showSpinner(isLoading: Boolean) {
-        activity_main_spinner.apply {
-            visibility = if (isLoading) View.VISIBLE else View.GONE
+        override fun onListUpdated(size: Int, queryStatus: QueryStatus?) {
+            spinner.setVisibility(false)
+            emptyData.setVisibility(false)
+            if (size > 0) {
+                onSuccessStateReceived()
+                return
+            }
+            when (queryStatus?.statusType) {
+                StatusType.LOADING -> onLoadingStateReceived()
+                StatusType.ERROR -> onErrorReceived()
+                StatusType.SUCCESS -> {
+                    onSuccessStateReceived()
+                    onEmptyGamesReceived()
+                }
+            }
         }
     }
 
