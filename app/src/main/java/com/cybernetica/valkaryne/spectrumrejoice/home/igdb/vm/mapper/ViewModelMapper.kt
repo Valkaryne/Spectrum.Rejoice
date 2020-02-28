@@ -3,15 +3,15 @@ package com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.mapper
 import com.cybernetica.valkaryne.spectrumrejoice.R
 import com.cybernetica.valkaryne.spectrumrejoice.core.BaseMapper
 import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.domain.model.*
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.CompanyViewState
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewState
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.PlatformViewState
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.ReleaseDateViewState
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.CompanyViewStateModel
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewStateModel
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.PlatformViewStateModel
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.ReleaseDateViewStateModel
 
-object DomainModelToViewStateMapper : BaseMapper<GameDomainModel, GameViewState> {
+object DomainModelToViewStateModelMapper : BaseMapper<GameDomainModel, GameViewStateModel> {
 
-    override fun map(type: GameDomainModel): GameViewState {
-        return GameViewState(
+    override fun map(type: GameDomainModel): GameViewStateModel {
+        return GameViewStateModel(
             id = type.id,
             name = type.name,
             coverUrl = String.format(URL_BASE, type.coverId),
@@ -26,9 +26,9 @@ object DomainModelToViewStateMapper : BaseMapper<GameDomainModel, GameViewState>
         )
     }
 
-    private fun mapCompanies(involved: List<InvolvedCompanyDomainModel>): List<CompanyViewState> {
+    private fun mapCompanies(involved: List<InvolvedCompanyDomainModel>): List<CompanyViewStateModel> {
         return involved.map {
-            CompanyViewState(
+            CompanyViewStateModel(
                 id = it.id,
                 name = it.name,
                 logoUrl = String.format(URL_BASE, it.logoId)
@@ -36,16 +36,16 @@ object DomainModelToViewStateMapper : BaseMapper<GameDomainModel, GameViewState>
         }
     }
 
-    private fun mapPlatforms(domainModel: PlatformDomainModel): PlatformViewState {
-        return PlatformViewState(
+    private fun mapPlatforms(domainModel: PlatformDomainModel): PlatformViewStateModel {
+        return PlatformViewStateModel(
             id = domainModel.id,
             name = domainModel.abbreviation,
             logoRes = mapPlatformLogo(domainModel.platformType)
         )
     }
 
-    private fun mapReleaseDate(domainModel: ReleaseDateDomainModel): ReleaseDateViewState {
-        return ReleaseDateViewState(
+    private fun mapReleaseDate(domainModel: ReleaseDateDomainModel): ReleaseDateViewStateModel {
+        return ReleaseDateViewStateModel(
             year = domainModel.year,
             date = domainModel.date,
             platformName = domainModel.platformName,

@@ -18,7 +18,7 @@ fun ViewGroup.inflate(layoutId: Int, attachToRoot: Boolean = false): View {
     return LayoutInflater.from(this.context).inflate(layoutId, this, attachToRoot)
 }
 
-fun AppCompatImageView.loadImage(imageUrl: String) {
+fun AppCompatImageView.loadImage(imageUrl: String?) {
     val circularProgressDrawable = CircularProgressDrawable(context)
     circularProgressDrawable.strokeWidth = 5f
     circularProgressDrawable.centerRadius = 30f
@@ -40,13 +40,17 @@ fun LinearLayout.addLogoToStack(logoRes: Int) {
     addView(logoImageView)
 }
 
+fun View.setVisibility(isVisible: Boolean) {
+    this.visibility = if (isVisible) View.VISIBLE else View.GONE
+}
+
 private fun View.getStackLayoutParams(): LinearLayout.LayoutParams {
     val dm = resources.displayMetrics
     val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-    lp.marginEnd = convertDipToPx(dm, 5F)
+    lp.marginEnd = convertDipToPx(dm)
     return lp
 }
 
-private fun convertDipToPx(metrics: DisplayMetrics, dip: Float): Int {
+private fun convertDipToPx(metrics: DisplayMetrics, dip: Float = 5F): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, metrics).roundToInt()
 }

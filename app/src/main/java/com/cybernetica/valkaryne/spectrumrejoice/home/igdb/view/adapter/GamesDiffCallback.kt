@@ -1,20 +1,19 @@
 package com.cybernetica.valkaryne.spectrumrejoice.home.igdb.view.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewState
+import com.cybernetica.valkaryne.spectrumrejoice.home.igdb.vm.model.GameViewStateModel
 
-class GamesDiffCallback(
-    private val oldGames: List<GameViewState>,
-    private val newGames: List<GameViewState>
-) : DiffUtil.Callback() {
+class GamesDiffCallback : DiffUtil.ItemCallback<GameViewStateModel>() {
 
-    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-        oldGames[oldItemPosition].id == newGames[newItemPosition].id
+    override fun areItemsTheSame(
+        oldItem: GameViewStateModel,
+        newItem: GameViewStateModel
+    ): Boolean =
+        oldItem.id == newItem.id
 
-    override fun getOldListSize(): Int = oldGames.size
-
-    override fun getNewListSize(): Int = newGames.size
-
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-        oldGames[oldItemPosition] == newGames[newItemPosition]
+    override fun areContentsTheSame(
+        oldItem: GameViewStateModel,
+        newItem: GameViewStateModel
+    ): Boolean =
+        oldItem == newItem
 }
