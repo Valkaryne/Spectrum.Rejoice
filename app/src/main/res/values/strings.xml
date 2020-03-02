@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Spectrum.Rejoice</string>
+
+    <string name="network_connection_error_title">Network error</string>
+    <string name="network_connection_error_cancel">Cancel</string>
+    <string name="network_connection_error_action">Try again</string>
+
+    <string name="no_result_found">No result found for your request</string>
+    <string name="query_status_error">Something went wrong…</string>
+    <string name="query_status_retry">Retry</string>
+</resources>

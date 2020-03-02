@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="30dp"
+    app:cardElevation="5dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_list_data_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="1dp"
+        android:padding="8dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/item_list_game_cover"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@tools:sample/avatars[3]" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/item_list_game_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/item_list_game_rating"
+            app:layout_constraintStart_toEndOf="@id/item_list_game_cover"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="The Witcher 3: Wild Hunt" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/item_list_game_rating"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:drawableEnd="@drawable/ic_star_black_16dp"
+            android:drawableTint="@android:color/tertiary_text_dark"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="4.9" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/item_list_game_release_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/item_list_game_cover"
+            app:layout_constraintTop_toBottomOf="@id/item_list_game_platforms"
+            tools:text="2016" />
+
+        <LinearLayout
+            android:id="@+id/item_list_game_platforms"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:dividerPadding="4dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toEndOf="@id/item_list_game_cover"
+            app:layout_constraintTop_toBottomOf="@id/item_list_game_name" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
